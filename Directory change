@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script: Monitor Directory Changes with System Stats (Kali Linux)
+# Script: Monitor Directory Changes with System Stats
 
 WATCHED_DIRS=("/var/log" "/etc")
 BASELINE_FILE="/var/log/dir_baseline.md5"
