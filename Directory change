@@ -1,0 +1,37 @@
+#!/bin/bash
+# Script: Monitor Directory Changes with System Stats (Kali Linux)
+
+WATCHED_DIRS=("/var/log" "/etc")
+BASELINE_FILE="/var/log/dir_baseline.md5"
+REPORT_FILE="/var/log/dir_changes.log"
+DSTAT_REPORT="/var/log/dstat_dir_monitor.log"
+
+echo "Directory Change Report - $(date)" > "$REPORT_FILE"
+
+# Create initial baseline if not present
+if [ ! -f "$BASELINE_FILE" ]; then
+    echo "Creating initial baseline..."
+    md5sum $(find ${WATCHED_DIRS[@]} -type f 2>/dev/null) > "$BASELINE_FILE"
+fi
+
+# Compare current checksums to the baseline
+md5sum -c "$BASELINE_FILE" 2>/dev/null | grep -v 'OK' >> "$REPORT_FILE"
+
+# Log system performance stats using dstat
+if command -v dstat &>/dev/null; then
+    echo "System Performance Report - $(date)" > "$DSTAT_REPORT"
+    dstat --cpu --mem --disk --net --top-cpu --top-io 5 3 >> "$DSTAT_REPORT"
+else
+    echo "dstat not installed. Install it with: sudo apt install dstat"
+fi
+
+# Report changes and whether dstat was used
+if [ -s "$REPORT_FILE" ]; then
+    echo "Changes detected! Check $REPORT_FILE and $DSTAT_REPORT."
+else
+    echo "No changes detected."
+fi
+
+# Add to cron job (run every 10 minutes)
+# crontab -e
+# */10 * * * * /path/to/changes.sh
